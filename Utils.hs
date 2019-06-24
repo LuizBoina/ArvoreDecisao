@@ -46,7 +46,15 @@ classificacao (T caracteriscas classificacao) = classificacao
 pegarClassesExemplos [] = []
 pegarClassesExemplos ((T caracteristicas classificacao):exemplos) = [classificacao] ++ pegarClassesExemplos exemplos
 
-maioria exemplos = classeMajoritaria (sort $ pegarClassesExemplos exemplos) []
+ordenaPorClasse exemplos = (sort $ pegarClassesExemplos exemplos)
+
+dividirPorClasseExemplos [] = []
+dividirPorClasseExemplos exemplos = (takeWhile (==(head exemplos)) exemplos) ++  dropWhile (==(head exemplos)) exemplos
+
+percentagemClasse classes = [(fromIntegral $ length mesmaClasse)/n | mesmaClasse <- classes]
+                        where n = fromIntegral $ product $ map length classes
+
+maioria exemplos = classeMajoritaria (ordenaPorClasse exemplos) []
                    where classeMajoritaria [] majoritaria = head majoritaria
                          classeMajoritaria classes majoritaria
                            | length classeAtual > length majoritaria = classeMajoritaria restante classeAtual
@@ -54,4 +62,6 @@ maioria exemplos = classeMajoritaria (sort $ pegarClassesExemplos exemplos) []
                            where classeAtual = takeWhile (==(head classes)) classes
                                  restante = dropWhile (==(head classes)) classes
 
-melhorTeste caracteriscas exemplos = 
+-- melhorTeste caracteriscas exemplos = do let entropia = entropiaBase (percentagemClasse $ dividirPorClasseExemplos $ ordenarPorClasse exemplos)
+
+entropiaBase percentages = sum [-percentagem*(log percentagem) | percentagem <- percentages]
