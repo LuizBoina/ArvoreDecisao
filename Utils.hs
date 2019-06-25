@@ -20,9 +20,11 @@ data Arvore = Nil | No Caracteristica [Arvore] deriving (Show)
 
 criaRaiz caracteristicas = No caracteristicas [Nil]
 
+formataExemplos :: [[String]] -> [String] -> Exemplos
 formataExemplos []  _ = []
 formataExemplos (xs:xss) caract = [T (zip (caract) (init xs)) (last xs)] ++ (formataExemplos xss caract)
 
+listaCaracteristicas :: Caracteristicas -> [String]
 listaCaracteristicas [] = []
 listaCaracteristicas ((Numeral caract valores):caracteristicas) = [caract] ++ listaCaracteristicas caracteristicas
 listaCaracteristicas ((Nominal caract valores):caracteristicas) = [caract] ++ listaCaracteristicas caracteristicas
@@ -47,11 +49,16 @@ temMesmaClassificacao ((T caracteristicas classificacao):exemplos) = and [classi
 
 classificacao (T caracteristicas classificacao) = classificacao
 
+--recebe uma base de exemplos e retorna as classificacoes
+pegarClassesExemplos :: Exemplos -> [String]
 pegarClassesExemplos [] = []
 pegarClassesExemplos ((T caracteristicas classificacao):exemplos) = [classificacao] ++ pegarClassesExemplos exemplos
 
+--agrupa classificacao por tipo
+ordenaPorClasse :: Exemplos -> [String]
 ordenaPorClasse exemplos = (sort $ pegarClassesExemplos exemplos)
 
+--dividi grupos de classificacoes em listas
 dividirPorClasseExemplos [] = []
 dividirPorClasseExemplos exemplos = (takeWhile (==(head exemplos)) exemplos) ++  dropWhile (==(head exemplos)) exemplos
 
@@ -68,9 +75,13 @@ maioria exemplos = classeMajoritaria (ordenaPorClasse exemplos) []
 
 -- melhorTeste caracteristicas exemplos = do let ig = calculaIG exemplos caracteristicas
 
-valor (T caracteristicas classificacao) (Nominal caracteristica valores) = head [snd caract | caract <- caracteristicas, (fst caract) == caracteristica]
+-- recebe um exemplo e o nome de uma caracteristica e retorna o valor dessa caracteristica no exemplos
+valor :: Exemplo -> String -> String
+valor (T caracteristicas classificacao) caracteristica = head [snd caract | caract <- caracteristicas, (fst caract) == caracteristica]
 
 calculaEntropia percentages = sum [-percentagem*(log percentagem) | percentagem <- percentages]
 
-{- calculaIG exemplo caracteristica = entropiaExemplos - somatorioCaracteristica
-                            where entropiaExemplos = calculaEntropia (percentagemClasse $ dividirPorClasseExemplos $ ordenarPorClasse exemplos) -}
+calculaIG exemplos caracteristica = entropiaExemplos - somatorioCaracteristica
+                                   where entropiaExemplos = calculaEntropia (percentagemClasse $ dividirPorClasseExemplos $ ordenarPorClasse exemplos)
+
+somatorioCaracteristica (ex:exs) (Nominal caracteristica valores) = valor ex 
