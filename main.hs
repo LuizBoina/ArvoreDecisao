@@ -1,10 +1,11 @@
 import Io
 import Utils
 
-main = do descricao <- lerDescricao
+main = do _descricao <- lerDescricao
+          let descricao = formataCaracteristicas _descricao --init descricao = caracteristicas/ last descricao = classe
           base <- lerBase
-          let exemplos = formataExemplos base
-          putStrLn (show $  temMesmaClassificacao exemplos)
+          let exemplos = formataExemplos base (listaCaracteristicas (init descricao))
+          putStrLn (show exemplos)
           {- let arvoreDecisao = criaArvoreDecisao (formataExemplos base) (formataCaracteriscas descricao)
           imprimeArvore (formataArvore arvoreDecisao)
           caso <- lerCaso
