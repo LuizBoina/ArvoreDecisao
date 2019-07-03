@@ -3,8 +3,8 @@ module Io
 lerDescricao,
 lerBase,
 lerCaso,
--- imprimeArvore,
--- imprimeResult
+imprimeArvore,
+imprimeResultado
 ) where
 
 import System.IO
@@ -22,3 +22,7 @@ lerBase = do hBase <-readFile "base.txt"
 lerCaso = do hCaso <- readFile "caso.txt"
              let caso = words hCaso
              return caso
+
+imprimeResultado resultado = writeFile "result.txt" resultado
+
+imprimeArvore arvore = writeFile "arvore.txt" arvore

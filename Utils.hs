@@ -5,11 +5,14 @@ listaCaracteristicas,
 discretizaNumeral,
 maioria,
 criaArvoreDecisao,
--- formataArvore,
--- computaResultado
+formataCaso,
+formataArvore,
+computaResultado
 ) where
 
 import Data.List (sort)
+
+data Caso = Caso [(String, String)] deriving (Show)
 
 data Exemplo = T [(String, String)] String deriving (Show)
 type Exemplos = [Exemplo]
@@ -21,6 +24,9 @@ data Arvore = Nil | No Caracteristica [Arvore] deriving (Show)
 
 criaRaiz caracteristicas = No caracteristicas [Nil]
 pegaRaiz (No caract _) = caract
+
+formataCaso :: [String] -> [String] -> Caso
+formataCaso caso caract = (Caso (zip caract caso))
 
 criaArvore :: Caracteristica -> [Arvore] -> Arvore
 criaArvore raiz [] = No raiz [Nil]
@@ -117,13 +123,13 @@ somatorioIV exemplos (valorFreq:valores)
                     | snd valorFreq == 0 = somatorioIV exemplos valores
                     | otherwise = (fromIntegral $ snd valorFreq)*(logBase 2 ((fromIntegral $ snd valorFreq)/(fromIntegral $ length exemplos))) + (somatorioIV exemplos valores)
 
---entrada: lista de tupla contendo (valor, classe) e uma lista de tupla contendo (valor, frequencia)
+--entrada: lista de tupla contendo (classe, valor) e uma lista de tupla contendo (valor, frequencia)
 --saida: somatorio IG de todos valores da dada caracteristica
 somatorioIG :: [(String, String)] -> [(String, Int)] -> Double
 somatorioIG _ [] = 0
 somatorioIG exemplos (valorFreq:valores) = (fromIntegral $ snd valorFreq)*(calculaEntropia (percentagemClasse (pegaClassiValor exemplos (fst valorFreq)))) + (somatorioIG exemplos valores)
 
---entrada: uma lista de tupla de (valor, classe) da base e um valor
+--entrada: uma lista de tupla de (classe, valor) da base e um valor
 --saida: lista de todas as classificacoes para o valor na base ordenado e semparado em sublistas
 pegaClassiValor :: [(String, String)] -> String -> [String]
 pegaClassiValor exemplos valor = dividirPorClasseExemplos $ sort [snd exemplo | exemplo <- exemplos, (fst exemplo) == valor]
@@ -160,3 +166,16 @@ discretizaNumeral (((Numeral caract [])):caracts) exemplos = (Numeral caract (di
                                                                    calculaMedias (ex:exs)
                                                                                    | snd ex == snd (head exs) = calculaMedias exs
                                                                                    | otherwise = (show (((readFloat (fst ex))+(readFloat (fst (head exs))))/2.0)):(calculaMedias exs)
+
+computaResultado :: Arvore -> Caso -> String
+computaResultado Nil caso = "erro"
+computaResultado (No (Nominal classi []) [Nil]) _ = classi
+computaResultado (No (Nominal caract (v:vs)) (f:fs)) caso = if (pegaValorCaso caso caract) == v then computaResultado f caso else computaResultado (No (Nominal caract vs) fs) caso
+computaResultado (No (Numeral caract [v]) [f]) caso = computaResultado f caso
+computaResultado (No (Numeral caract (v:vs)) (f:fs)) caso = if (pegaValorCaso caso caract) <= v then computaResultado f caso else computaResultado (No (Numeral caract vs) fs) caso
+
+--retorna o valor da caracteristica no nó atual
+pegaValorCaso :: Caso -> String -> String
+pegaValorCaso (Caso caso) caract = head [snd _caract | _caract <- caso, (fst _caract) == caract]
+
+formataArvore :: Arvore -> String
