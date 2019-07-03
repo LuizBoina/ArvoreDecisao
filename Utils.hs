@@ -20,6 +20,11 @@ type Caracteristicas = [Caracteristica]
 data Arvore = Nil | No Caracteristica [Arvore] deriving (Show)
 
 criaRaiz caracteristicas = No caracteristicas [Nil]
+pegaRaiz (No caract _) = caract
+
+criaArvore :: Caracteristica -> [Arvore] -> Arvore
+criaArvore raiz [] = No raiz [Nil]
+criaArvore raiz arv = No raiz (arv)
 
 formataExemplos :: [[String]] -> [String] -> Exemplos
 formataExemplos []  _ = []
@@ -36,15 +41,29 @@ formataCaracteristicas (xs:xss)
                     | length xs == 1 = (Numeral (head xs) []):(formataCaracteristicas xss)
                     | otherwise = (Nominal (head xs) (sort $ tail xs)):(formataCaracteristicas xss)
 
-criaArvoreDecisao [] _ maisComum = maisComum
-criaArvoreDecisao exemplos [] _ = maioria exemplos
+criaArvoreDecisao :: Exemplos -> Caracteristicas -> Caracteristica -> Arvore
+criaArvoreDecisao [] _ maisComum = criaRaiz maisComum
+criaArvoreDecisao exemplos [] _ = criaRaiz (maioria exemplos)
 criaArvoreDecisao exemplos caracteristicas maisComum
-                        | temMesmaClassificacao exemplos = pegaClassiEx (head exemplos)
-                        | otherwise = do let arvore = criaRaiz (melhorTeste exemplos caracteristicas (-999) (head caracteristicas))
-                                         putStrLn $ show arvore
+                        | temMesmaClassificacao exemplos = criaRaiz (pegaClassiEx (head exemplos))
+                        | otherwise = criaArvore melhor (criaSubArvores melhor exemplos caracteristicas maisComum)
+                                      where melhor = melhorTeste exemplos caracteristicas (-999) (head caracteristicas)
+
+criaSubArvores :: Caracteristica -> Exemplos -> Caracteristicas -> Caracteristica -> [Arvore]
+criaSubArvores (Numeral caract []) _ _ _ = []
+criaSubArvores (Numeral caract (vi:vis)) exemplos caracts maisComum = (criaArvoreDecisao exemplosVi (removeCaractDaLista caracts caract) maisComum):(criaSubArvores (Numeral caract vis) exemplosSemVi caracts maisComum)
+                                                                      where exemplosVi = [exemplo | exemplo<-exemplos, (_pegaClassiCaract exemplo caract) <= vi]
+                                                                            exemplosSemVi = [exemplo | exemplo<-exemplos, (_pegaClassiCaract exemplo caract) > vi]
+criaSubArvores (Nominal caract []) _ _ _= []
+criaSubArvores (Nominal caract (vi:vis)) exemplos caracts maisComum = (criaArvoreDecisao exemplosVi (removeCaractDaLista caracts caract) maisComum):(criaSubArvores (Nominal caract vis) exemplosSemVi caracts maisComum)
+                                                                      where exemplosVi = [exemplo | exemplo<-exemplos, (_pegaClassiCaract exemplo caract) == vi]
+                                                                            exemplosSemVi = [exemplo | exemplo<-exemplos, (_pegaClassiCaract exemplo caract) /= vi]
 
 readFloat :: String -> Double
 readFloat = read
+
+removeCaractDaLista :: Caracteristicas -> String -> Caracteristicas
+removeCaractDaLista caracts caract = [_caract | _caract <- caracts, (pegaNomeCaract _caract) /= caract]
 
 temMesmaClassificacao :: Exemplos -> Bool
 temMesmaClassificacao ((T caracteristicas classificacao):exemplos) = and [classificacao == _classificacao | (T _caracteristicas _classificacao) <- exemplos]
@@ -60,16 +79,16 @@ dividirPorClasseExemplos exemplos = (takeWhile (==(head exemplos)) exemplos) ++ 
 percentagemClasse classes = [(fromIntegral $ length mesmaClasse)/n | mesmaClasse <- classes]
                             where n = fromIntegral $ sum $ map length classes
 
-maioria :: Exemplos -> String
+maioria :: Exemplos -> Caracteristica
 maioria exemplos = classeMajoritaria (ordenaClasseEx exemplos) []
-                   where classeMajoritaria [] majoritaria = head majoritaria
+                   where classeMajoritaria [] majoritaria = (Nominal (head majoritaria) [])
                          classeMajoritaria classes majoritaria
                            | length classeAtual > length majoritaria = classeMajoritaria restante classeAtual
                            | otherwise = classeMajoritaria restante majoritaria
                            where classeAtual = takeWhile (==(head classes)) classes
                                  restante = dropWhile (==(head classes)) classes
 
-pegaClassiEx (T caract classificacao) = classificacao
+pegaClassiEx (T caract classificacao) = (Nominal classificacao [])
 pegaNomeCaract (Numeral caract valores) = caract
 pegaNomeCaract (Nominal caract valores) = caract
 
@@ -118,6 +137,7 @@ pegaValoresEx exemplos caract = sort [snd _caract | (T _caracts classi) <- exemp
 --saida: lista de tupla contendo o valor da caracteristica e a classificacao que o exemplo recebeu
 pegaClassiCaract :: Exemplos -> String -> [(String, String)]
 pegaClassiCaract exemplos caracteristica = [(snd _caractEx, classi) | (T caractEx classi) <-exemplos, _caractEx <- caractEx, (fst _caractEx) == caracteristica]
+_pegaClassiCaract (T caractEx classi) caract = head [snd _caractEx | _caractEx <- caractEx, (fst _caractEx) == caract]
 
 --entrada: valores ordenados da base em relacao a uma dada caracteristica e caracteristica
 --saida: lista de tupla contendo o valor da caracteristica e a frequencia que aparece na base de exemplos
