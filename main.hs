@@ -5,9 +5,8 @@ main = do descricao <- lerDescricao
           let _descricao = formataCaracteristicas descricao --init descricao = caracteristicas/ last descricao = classe
           base <- lerBase
           let exemplos = formataExemplos base (listaCaracteristicas (init _descricao))
-          let __descricao = discretizaNumeral (init _descricao) exemplos
-          let arvore =  criaArvoreDecisao exemplos __descricao (maioria exemplos)
-          imprimeArvore (formataArvore arvore)
+          let arvore =  criaArvoreDecisao exemplos (init _descricao) (maioria exemplos)
+        --   imprimeArvore (formataArvore arvore)
           caso <- lerCaso
           let resultado = computaResultado arvore (formataCaso caso (listaCaracteristicas (init _descricao)))
           imprimeResultado resultado

@@ -6,7 +6,7 @@ discretizaNumeral,
 maioria,
 criaArvoreDecisao,
 formataCaso,
-formataArvore,
+-- formataArvore,
 computaResultado
 ) where
 
@@ -53,7 +53,7 @@ criaArvoreDecisao exemplos [] _ = criaRaiz (maioria exemplos)
 criaArvoreDecisao exemplos caracteristicas maisComum
                         | temMesmaClassificacao exemplos = criaRaiz (pegaClassiEx (head exemplos))
                         | otherwise = criaArvore melhor (criaSubArvores melhor exemplos caracteristicas maisComum)
-                                      where melhor = melhorTeste exemplos caracteristicas (-999) (head caracteristicas)
+                                      where melhor = melhorTeste exemplos (discretizaNumeral caracteristicas exemplos) (-999) (head caracteristicas)
 
 criaSubArvores :: Caracteristica -> Exemplos -> Caracteristicas -> Caracteristica -> [Arvore]
 criaSubArvores (Numeral caract []) _ _ _ = []
@@ -178,4 +178,4 @@ computaResultado (No (Numeral caract (v:vs)) (f:fs)) caso = if (pegaValorCaso ca
 pegaValorCaso :: Caso -> String -> String
 pegaValorCaso (Caso caso) caract = head [snd _caract | _caract <- caso, (fst _caract) == caract]
 
-formataArvore :: Arvore -> String
+-- formataArvore :: Arvore -> String
