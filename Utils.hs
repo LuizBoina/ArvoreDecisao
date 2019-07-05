@@ -6,7 +6,8 @@ discretizaNumeral,
 maioria,
 criaArvoreDecisao,
 formataCaso,
-formataArvore,
+formataCasos,
+-- formataArvore,
 computaResultado
 ) where
 
@@ -178,4 +179,6 @@ computaResultado (No (Numeral caract (v:vs)) (f:fs)) caso = if (pegaValorCaso ca
 pegaValorCaso :: Caso -> String -> String
 pegaValorCaso (Caso caso) caract = head [snd _caract | _caract <- caso, (fst _caract) == caract]
 
-formataArvore :: Arvore -> String
+-- formataArvore :: Arvore -> String
+formataCasos [] _ = []
+formataCasos (x:xs) caract = (formataCaso x caract):(formataCasos xs caract) 

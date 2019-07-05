@@ -1,5 +1,7 @@
 module Io
 (
+lerCasos,
+imprimeResultados,
 lerDescricao,
 lerBase,
 lerCaso,
@@ -23,6 +25,13 @@ lerCaso = do hCaso <- readFile "caso.txt"
              let caso = words hCaso
              return caso
 
+lerCasos = do hCasos <- readFile "caso.txt"
+              let casos = formataEntrada hCasos
+              return casos
+
 imprimeResultado resultado = writeFile "result.txt" resultado
+
+imprimeResultados [] formatada = writeFile "result.txt" formatada
+imprimeResultados (x:xs) formatada = imprimeResultados xs (formatada++(x++"\n"))
 
 imprimeArvore arvore = writeFile "arvore.txt" arvore
